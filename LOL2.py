@@ -40,6 +40,7 @@ if uploaded_files:
         deleted_data = {}  # To store deleted rows' samples
         file_counts = {}  # Dictionary to store row counts before and after
         updated_files = {}  # To store the cleaned dataframes
+        total_rows_after = 0  # Counter for total rows after removing duplicates
 
         for file_name, df in data.items():
             # Get the initial count of rows
@@ -54,12 +55,16 @@ if uploaded_files:
 
             # Get the final count of rows after removing duplicates
             final_row_count = len(df_cleaned)
+            total_rows_after += final_row_count  # Update the total row counter
         
             # Store the row counts before and after
             file_counts[file_name] = {"initial": initial_row_count, "final": final_row_count}
 
             # Save the cleaned dataframe
             updated_files[file_name] = df_cleaned
+
+        # Display the total rows across all files after removing duplicates
+        st.write(f"**Total Rows Across All Files After Removing Duplicates:** {total_rows_after}")
 
         # Provide download buttons for the updated files and show row counts
         for file_name, cleaned_df in updated_files.items():
@@ -92,4 +97,5 @@ if uploaded_files:
 
     else:
         st.warning("No valid data found in the uploaded files or missing 'AppMedLow.csv'.")
+
 
