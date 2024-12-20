@@ -39,6 +39,7 @@ if uploaded_files:
         # Now we need to remove these duplicate rows from all files except AppMedLow
         deleted_data = {}  # To store deleted rows' samples
         file_counts = {}  # Dictionary to store row counts before and after
+        updated_files = {}  # To store the cleaned dataframes
 
         for file_name, df in data.items():
             # Get the initial count of rows
@@ -57,15 +58,22 @@ if uploaded_files:
             # Store the row counts before and after
             file_counts[file_name] = {"initial": initial_row_count, "final": final_row_count}
 
-        # Display the row counts before and after and provide a sample of deleted rows
-        for file_name, file_data in deleted_data.items():
+            # Save the cleaned dataframe
+            updated_files[file_name] = df_cleaned
+
+        # Provide download buttons for the updated files and show row counts
+        for file_name, cleaned_df in updated_files.items():
+            # Save the cleaned dataframe to CSV
+            output_path = f"updated_{file_name}"
+            cleaned_df.to_csv(output_path, index=False)
+
             st.write(f"**{file_name}:**")
             st.write(f"Rows before removing duplicates: {file_counts[file_name]['initial']}")
             st.write(f"Rows after removing duplicates: {file_counts[file_name]['final']}")
 
             # Display a sample of the deleted rows with the row index + 2
-            if not file_data.empty:
-                deleted_data_sample = file_data.head()  # Get the first 5 deleted rows as a sample
+            if not deleted_data[file_name].empty:
+                deleted_data_sample = deleted_data[file_name].head()  # Get the first 5 deleted rows as a sample
                 deleted_data_sample.index = deleted_data_sample.index + 2  # Adjust index by +2
                 st.write(f"Sample of deleted rows from {file_name}:")
                 st.write(deleted_data_sample)
@@ -73,5 +81,15 @@ if uploaded_files:
             else:
                 st.write(f"No rows were deleted from {file_name}.")
 
+            # Provide a download button for the cleaned file
+            with open(output_path, "rb") as f:
+                st.download_button(
+                    label=f"Download Updated {file_name}",
+                    data=f,
+                    file_name=output_path,
+                    mime="text/csv"
+                )
+
     else:
         st.warning("No valid data found in the uploaded files or missing 'AppMedLow.csv'.")
+
